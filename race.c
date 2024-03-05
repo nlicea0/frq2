@@ -33,7 +33,14 @@ int main(){
         }
         else if (pid == 0){
             lock(&cv.lk);
-            cv_signal(&cv);
+            struct stat stats;
+            fstat(fd, &stats);
+            printf(1, "file size = %d\n", stats.size);
+            while(stats.size <= 0){
+                cv_wait(&cv);
+                fstat(fd, &stats);
+                printf(1, "file size = %d\n", stats.size);
+            }
             unlock(&cv.lk);
             printf(1, "Child 2 Executing\n");
         }
@@ -48,5 +55,7 @@ int main(){
             printf(1,"Parent exiting.\n");
         }
     }
+    close(fd);
+    unlink("flag");
     exit();
 }
